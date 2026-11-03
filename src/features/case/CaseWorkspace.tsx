@@ -5,30 +5,27 @@ import { analyzeCase, createReport, getInboundTransfers } from "@/lib/api/cases"
 import { DEMO_WALLET } from "@/mocks/case";
 import { AnalysisScreen } from "@/features/case/screens/AnalysisScreen";
 import { ReportScreen } from "@/features/case/screens/ReportScreen";
-import { RequestScreen } from "@/features/case/screens/RequestScreen";
 import { StatementScreen } from "@/features/case/screens/StatementScreen";
 import { TransactionScreen } from "@/features/case/screens/TransactionScreen";
 import type {
   CaseAnalysis,
   CaseReport,
   CaseStep,
-  RequestContext,
+  SubmissionDetails,
   Transfer,
   UserStatement,
 } from "@/types/case";
 
 const steps: Array<{ id: CaseStep; label: string }> = [
-  { id: "request", label: "요청 확인" },
-  { id: "transaction", label: "거래 선택" },
+  { id: "transaction", label: "입금 조회" },
   { id: "analysis", label: "온체인 조사" },
-  { id: "statement", label: "진술 검토" },
+  { id: "statement", label: "내 설명" },
   { id: "report", label: "자료 생성" },
 ];
 
-const initialContext: RequestContext = {
-  exchange: "upbit",
-  requestType: "suspicious-relation",
-  requestText: "특정 입금 건과 발신 주소의 관계를 설명하고 관련 거래 자료를 제출해 주세요.",
+const initialSubmission: SubmissionDetails = {
+  exchange: "unspecified",
+  requestText: "",
 };
 
 const initialStatement: UserStatement = {
@@ -41,9 +38,9 @@ const initialStatement: UserStatement = {
 };
 
 export function CaseWorkspace() {
-  const [step, setStep] = useState<CaseStep>("request");
+  const [step, setStep] = useState<CaseStep>("transaction");
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [context, setContext] = useState<RequestContext>(initialContext);
+  const [submission, setSubmission] = useState<SubmissionDetails>(initialSubmission);
   const [walletAddress, setWalletAddress] = useState(DEMO_WALLET);
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [selectedTransferId, setSelectedTransferId] = useState<string>();
@@ -79,17 +76,12 @@ export function CaseWorkspace() {
     }
   };
 
-  const openTransactionStep = async () => {
-    setStep("transaction");
-    if (transfers.length === 0) await searchTransfers();
-  };
-
   const runAnalysis = async () => {
     if (!selectedTransfer) return;
     setLoading(true);
     setStep("analysis");
     try {
-      const nextAnalysis = await analyzeCase({ context, walletAddress, transfer: selectedTransfer });
+      const nextAnalysis = await analyzeCase({ walletAddress, transfer: selectedTransfer });
       setAnalysis(nextAnalysis);
       setIncludedEvidenceIds(nextAnalysis.evidence.map((item) => item.id));
     } finally {
@@ -102,7 +94,7 @@ export function CaseWorkspace() {
     setLoading(true);
     try {
       const nextReport = await createReport({
-        context,
+        submission,
         walletAddress,
         transfer: selectedTransfer,
         analysis,
@@ -123,8 +115,8 @@ export function CaseWorkspace() {
   };
 
   const restart = () => {
-    setStep("request");
-    setContext(initialContext);
+    setStep("transaction");
+    setSubmission(initialSubmission);
     setWalletAddress(DEMO_WALLET);
     setTransfers([]);
     setSelectedTransferId(undefined);
@@ -179,9 +171,6 @@ export function CaseWorkspace() {
       </aside>
 
       <main className="workspace">
-        {step === "request" ? (
-          <RequestScreen value={context} onChange={setContext} onNext={openTransactionStep} />
-        ) : null}
         {step === "transaction" ? (
           <TransactionScreen
             walletAddress={walletAddress}
@@ -192,7 +181,6 @@ export function CaseWorkspace() {
             onAddressChange={setWalletAddress}
             onSearch={searchTransfers}
             onSelect={setSelectedTransferId}
-            onBack={() => setStep("request")}
             onNext={runAnalysis}
           />
         ) : null}
@@ -209,8 +197,10 @@ export function CaseWorkspace() {
           <StatementScreen
             statement={statement}
             analysis={analysis}
+            submission={submission}
             includedEvidenceIds={includedEvidenceIds}
             onStatementChange={setStatement}
+            onSubmissionChange={setSubmission}
             onEvidenceToggle={toggleEvidence}
             onBack={() => setStep("analysis")}
             onNext={buildReport}
@@ -219,7 +209,7 @@ export function CaseWorkspace() {
         ) : null}
         {step === "report" ? (
           <ReportScreen
-            context={context}
+            submission={submission}
             walletAddress={walletAddress}
             transfer={selectedTransfer}
             analysis={analysis}

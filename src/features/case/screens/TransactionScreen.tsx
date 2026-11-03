@@ -10,7 +10,6 @@ interface TransactionScreenProps {
   onAddressChange: (value: string) => void;
   onSearch: () => void;
   onSelect: (id: string) => void;
-  onBack: () => void;
   onNext: () => void;
 }
 
@@ -23,7 +22,6 @@ export function TransactionScreen({
   onAddressChange,
   onSearch,
   onSelect,
-  onBack,
   onNext,
 }: TransactionScreenProps) {
   return (
@@ -65,7 +63,11 @@ export function TransactionScreen({
           </div>
         ) : (
           <div className="transaction-list">
-            {transfers.map((transfer) => {
+            {transfers.length === 0 ? (
+              <div className="transaction-empty">
+                주소를 확인한 뒤 입금 내역을 조회하세요.
+              </div>
+            ) : transfers.map((transfer) => {
               const selected = selectedTransferId === transfer.id;
               return (
                 <button
@@ -91,8 +93,7 @@ export function TransactionScreen({
         )}
       </div>
 
-      <div className="screen-actions">
-        <button className="secondary-button" type="button" onClick={onBack}>이전</button>
+      <div className="screen-actions screen-actions-end">
         <button className="primary-button" type="button" onClick={onNext} disabled={!selectedTransferId || loading}>
           거래 분석
         </button>

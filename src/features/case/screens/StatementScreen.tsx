@@ -1,10 +1,16 @@
-import type { CaseAnalysis, UserStatement } from "@/types/case";
+import type {
+  CaseAnalysis,
+  SubmissionDetails,
+  UserStatement,
+} from "@/types/case";
 
 interface StatementScreenProps {
   statement: UserStatement;
   analysis?: CaseAnalysis;
+  submission: SubmissionDetails;
   includedEvidenceIds: string[];
   onStatementChange: (statement: UserStatement) => void;
+  onSubmissionChange: (submission: SubmissionDetails) => void;
   onEvidenceToggle: (id: string) => void;
   onBack: () => void;
   onNext: () => void;
@@ -15,6 +21,15 @@ const answerOptions = [
   { id: "no", label: "아니요" },
   { id: "yes", label: "예" },
   { id: "unknown", label: "잘 모르겠어요" },
+] as const;
+
+const exchanges = [
+  { id: "unspecified", label: "선택하지 않음" },
+  { id: "upbit", label: "Upbit" },
+  { id: "coinbase", label: "Coinbase" },
+  { id: "binance", label: "Binance" },
+  { id: "kraken", label: "Kraken" },
+  { id: "other", label: "기타" },
 ] as const;
 
 interface QuestionProps {
@@ -50,8 +65,10 @@ function Question({ number, label, name, value, onChange }: QuestionProps) {
 export function StatementScreen({
   statement,
   analysis,
+  submission,
   includedEvidenceIds,
   onStatementChange,
+  onSubmissionChange,
   onEvidenceToggle,
   onBack,
   onNext,
@@ -89,7 +106,7 @@ export function StatementScreen({
     <section className="screen-section" aria-labelledby="statement-title">
       <div className="section-heading compact-heading">
         <h1 id="statement-title">내 설명</h1>
-        <p>온체인 기록으로 확인할 수 없는 내용만 입력하세요.</p>
+        <p>입금 당시 상황을 확인하세요.</p>
       </div>
 
       <div className="statement-layout">
@@ -169,6 +186,39 @@ export function StatementScreen({
             ) : (
               <p>거래소 요청 원문이나 본인 확인 자료가 있을 때만 추가하세요.</p>
             )}
+          </div>
+
+          <div className="submission-details">
+            <label className="select-field">
+              <span>제출 대상 <small>선택</small></span>
+              <select
+                value={submission.exchange}
+                onChange={(event) =>
+                  onSubmissionChange({
+                    ...submission,
+                    exchange: event.target.value as SubmissionDetails["exchange"],
+                  })
+                }
+              >
+                {exchanges.map((exchange) => (
+                  <option key={exchange.id} value={exchange.id}>
+                    {exchange.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="text-field compact-field submission-request-field">
+              <span>거래소 요청 내용 <small>선택</small></span>
+              <textarea
+                rows={3}
+                placeholder="받은 문구가 있다면 붙여넣으세요."
+                value={submission.requestText}
+                onChange={(event) =>
+                  onSubmissionChange({ ...submission, requestText: event.target.value })
+                }
+              />
+            </label>
           </div>
         </div>
 

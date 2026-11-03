@@ -2,7 +2,7 @@ import { makeMockReport, mockAnalysis, mockTransfers } from "@/mocks/case";
 import type {
   CaseAnalysis,
   CaseReport,
-  RequestContext,
+  SubmissionDetails,
   Transfer,
   UserStatement,
 } from "@/types/case";
@@ -46,7 +46,6 @@ export async function getInboundTransfers(address: string): Promise<Transfer[]> 
 }
 
 export async function analyzeCase(input: {
-  context: RequestContext;
   walletAddress: string;
   transfer: Transfer;
 }): Promise<CaseAnalysis> {
@@ -54,8 +53,6 @@ export async function analyzeCase(input: {
     return request<CaseAnalysis>("/api/cases/analyze", {
       method: "POST",
       body: JSON.stringify({
-        exchange: input.context.exchange,
-        requestType: input.context.requestType,
         walletAddress: input.walletAddress,
         txHash: input.transfer.txHash,
       }),
@@ -67,7 +64,7 @@ export async function analyzeCase(input: {
 }
 
 export async function createReport(input: {
-  context: RequestContext;
+  submission: SubmissionDetails;
   walletAddress: string;
   transfer: Transfer;
   analysis: CaseAnalysis;
@@ -82,5 +79,5 @@ export async function createReport(input: {
   }
 
   await pause(520);
-  return makeMockReport(input.statement);
+  return makeMockReport(input.statement, input.submission);
 }

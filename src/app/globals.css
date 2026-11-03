@@ -36,7 +36,8 @@ body {
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
 }
 
@@ -46,7 +47,8 @@ button {
 
 button:focus-visible,
 input:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+select:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--action) 24%, transparent);
   outline-offset: 2px;
 }
@@ -426,6 +428,7 @@ textarea:focus-visible {
 
 .text-field textarea,
 .text-field input,
+.select-field select,
 .address-search input {
   width: 100%;
   color: var(--ink);
@@ -437,12 +440,14 @@ textarea:focus-visible {
 
 .text-field textarea:hover,
 .text-field input:hover,
+.select-field select:hover,
 .address-search input:hover {
   border-color: #94a3b8;
 }
 
 .text-field textarea:focus,
 .text-field input:focus,
+.select-field select:focus,
 .address-search input:focus {
   border-color: var(--action);
   box-shadow: 0 0 0 3px rgb(37 99 235 / 10%);
@@ -699,6 +704,14 @@ textarea:focus-visible {
 
 .loading-list {
   padding: 14px;
+}
+
+.transaction-empty {
+  min-height: 156px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .loading-list i {
@@ -1138,6 +1151,47 @@ textarea:focus-visible {
   font-size: 12px;
 }
 
+.submission-details {
+  padding-top: 12px;
+  margin-top: 14px;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  align-items: end;
+  gap: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.select-field > span {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 14px;
+  font-weight: 680;
+}
+
+.select-field span small {
+  margin-left: 5px;
+  color: var(--faint);
+  font-weight: 450;
+}
+
+.select-field select {
+  width: 100%;
+  height: 44px;
+  padding: 0 34px 0 12px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.submission-request-field textarea {
+  min-height: 66px !important;
+  height: 66px !important;
+}
+
 .report-selection {
   overflow: hidden;
 }
@@ -1251,6 +1305,10 @@ textarea:focus-visible {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   border-bottom: 1px solid var(--border);
+}
+
+.report-metadata.is-three-columns {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .report-metadata div {
@@ -1519,7 +1577,8 @@ textarea:focus-visible {
   .statement-question legend { min-height: 0; }
   .statement-date-field,
   .statement-form > .text-field:not(.statement-date-field),
-  .attachment-field { grid-column: 1; }
+  .attachment-field,
+  .submission-details { grid-column: 1; }
   .report-layout { grid-template-columns: 1fr; }
   .submission-panel { position: static; }
 }
@@ -1535,7 +1594,7 @@ textarea:focus-visible {
   .sidebar-header { display: none; }
   .step-navigation { position: static; }
   .step-navigation ol {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 3px;
   }
   .step-navigation button {
@@ -1579,7 +1638,9 @@ textarea:focus-visible {
   .statement-question legend { min-height: 0; }
   .statement-date-field,
   .statement-form > .text-field:not(.statement-date-field),
-  .attachment-field { grid-column: 1; }
+  .attachment-field,
+  .submission-details { grid-column: 1; }
+  .submission-details { grid-template-columns: 1fr; }
   .report-paper { padding: 18px 16px; }
   .report-paper > header { flex-direction: column; gap: 7px; }
   .report-metadata,

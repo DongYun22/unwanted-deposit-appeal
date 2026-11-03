@@ -1,17 +1,15 @@
-export type ExchangeId = "upbit" | "coinbase" | "binance" | "kraken" | "other";
+export type ExchangeId =
+  | "unspecified"
+  | "upbit"
+  | "coinbase"
+  | "binance"
+  | "kraken"
+  | "other";
 
-export type RequestType =
-  | "specific-deposit"
-  | "suspicious-relation"
-  | "source-of-funds"
-  | "wallet-ownership"
-  | "unknown";
+export type CaseStep = "transaction" | "analysis" | "statement" | "report";
 
-export type CaseStep = "request" | "transaction" | "analysis" | "statement" | "report";
-
-export interface RequestContext {
+export interface SubmissionDetails {
   exchange: ExchangeId;
-  requestType: RequestType;
   requestText: string;
 }
 

@@ -1,4 +1,10 @@
-import type { CaseAnalysis, CaseReport, Transfer, UserStatement } from "@/types/case";
+import type {
+  CaseAnalysis,
+  CaseReport,
+  SubmissionDetails,
+  Transfer,
+  UserStatement,
+} from "@/types/case";
 
 export const DEMO_WALLET = "0x1111111111111111111111111111111111111111";
 
@@ -95,19 +101,26 @@ export const mockAnalysis: CaseAnalysis = {
   ],
 };
 
-export function makeMockReport(statement: UserStatement): CaseReport {
+export function makeMockReport(
+  statement: UserStatement,
+  submission: SubmissionDetails,
+): CaseReport {
+  const additionalDocuments = [
+    ...(submission.requestText.trim() ? ["거래소에서 받은 소명 요청 원문"] : []),
+    ...(submission.exchange !== "unspecified"
+      ? ["제출 계정 정보가 확인되는 화면"]
+      : []),
+    statement.attachments.length > 0
+      ? `사용자가 첨부한 관련 자료 ${statement.attachments.length}개`
+      : "관련 자료가 있다면 추가 첨부",
+  ];
+
   return {
     generatedAt: "2026-11-03T10:30:00+09:00",
     summary:
       "선택한 지갑은 문제 발신 주소로부터 0.001 ETH를 수신했습니다. 조회 범위에서 두 주소 사이의 이전 직접 거래와 입금 이후 발신자에게 돌아간 직접 전송은 확인되지 않았습니다. 같은 발신자는 24시간 동안 다수 주소에 유사한 금액을 전송했습니다.",
     request:
       "위 온체인 기록과 사용자 진술을 바탕으로 해당 입금의 경위 및 계정 제한을 재검토해 주시기 바랍니다.",
-    additionalDocuments: [
-      "거래소에서 받은 소명 요청 원문",
-      "본인 계정 정보가 확인되는 화면",
-      statement.attachments.length > 0
-        ? `사용자가 첨부한 관련 자료 ${statement.attachments.length}개`
-        : "관련 자료가 있다면 추가 첨부",
-    ],
+    additionalDocuments,
   };
 }

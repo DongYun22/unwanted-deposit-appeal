@@ -2,13 +2,13 @@ import { shortAddress } from "@/features/case/utils";
 import type {
   CaseAnalysis,
   CaseReport,
-  RequestContext,
+  SubmissionDetails,
   Transfer,
   UserStatement,
 } from "@/types/case";
 
 interface ReportScreenProps {
-  context: RequestContext;
+  submission: SubmissionDetails;
   walletAddress: string;
   transfer?: Transfer;
   analysis?: CaseAnalysis;
@@ -20,6 +20,7 @@ interface ReportScreenProps {
 }
 
 const exchangeLabels = {
+  unspecified: "미지정",
   upbit: "Upbit",
   coinbase: "Coinbase",
   binance: "Binance",
@@ -34,7 +35,7 @@ const statementLabel = (value: "no" | "yes" | "unknown") => {
 };
 
 export function ReportScreen({
-  context,
+  submission,
   walletAddress,
   transfer,
   analysis,
@@ -46,6 +47,7 @@ export function ReportScreen({
 }: ReportScreenProps) {
   if (!transfer || !analysis || !report) return null;
   const includedEvidence = analysis.evidence.filter((item) => includedEvidenceIds.includes(item.id));
+  const hasExchange = submission.exchange !== "unspecified";
 
   return (
     <section className="screen-section report-screen" aria-labelledby="report-title">
@@ -67,8 +69,10 @@ export function ReportScreen({
             <span>{analysis.caseId}</span>
           </header>
 
-          <dl className="report-metadata">
-            <div><dt>제출 대상</dt><dd>{exchangeLabels[context.exchange]}</dd></div>
+          <dl className={hasExchange ? "report-metadata" : "report-metadata is-three-columns"}>
+            {hasExchange ? (
+              <div><dt>제출 대상</dt><dd>{exchangeLabels[submission.exchange]}</dd></div>
+            ) : null}
             <div><dt>대상 지갑</dt><dd>{shortAddress(walletAddress, 10, 8)}</dd></div>
             <div><dt>문제 거래</dt><dd>{shortAddress(transfer.txHash, 10, 8)}</dd></div>
             <div><dt>입금 금액</dt><dd>{transfer.amount} {transfer.asset}</dd></div>
@@ -78,6 +82,13 @@ export function ReportScreen({
             <h3>요청 요약</h3>
             <p>{report.summary}</p>
           </section>
+
+          {submission.requestText.trim() ? (
+            <section className="report-copy request-source">
+              <h3>거래소 요청 내용</h3>
+              <p>{submission.requestText}</p>
+            </section>
+          ) : null}
 
           <section className="report-copy">
             <h3>확인된 사실과 분석 정황</h3>
@@ -126,8 +137,8 @@ export function ReportScreen({
 
         <aside className="submission-panel">
           <div>
-            <h2>{exchangeLabels[context.exchange]} 추가 자료</h2>
-            <p>요청받은 항목과 대조하세요.</p>
+            <h2>{hasExchange ? `${exchangeLabels[submission.exchange]} 추가 자료` : "추가 확인 자료"}</h2>
+            <p>{submission.requestText.trim() ? "받은 요청과 대조하세요." : "필요한 경우에만 추가하세요."}</p>
           </div>
           <ul>
             {report.additionalDocuments.map((document) => <li key={document}>{document}</li>)}
