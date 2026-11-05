@@ -34,6 +34,8 @@ const steps: Array<{ id: CaseStep; label: string }> = [
 
 const initialSubmission: SubmissionDetails = {
   exchange: "unspecified",
+  restrictionType: "unknown",
+  baseDate: "",
   requestText: "",
 };
 

@@ -69,6 +69,10 @@
 | 요청 | `{ "walletAddress", "txHash", "eventIndex", "statement": UserStatement, "submission": SubmissionDetails }` |
 | 응답 | `{ "analysis": CaseAnalysis, "report": CaseReport }` |
 
+`submission`에 `restrictionType`이나 `baseDate`가 없으면 `"unknown"`과 `""`로 채웁니다. 모르는 `exchange` 값은 `"unspecified"`로 봅니다.
+
+`report.route`는 제한 유형, 거래소 프로필(`src/profiles/`), 기준일로 계산한 제출처와 기한입니다. 기한의 "오늘"은 한국 날짜 기준입니다.
+
 ## 주요 타입 요약
 
 | 타입 | 핵심 필드 |
@@ -77,5 +81,11 @@
 | `EvidenceItem` | `category`(verified / derived / unverifiable), `analysis`(A~E, S), `title`, `description`, `sources` |
 | `AnalysisScope` | `windowLabel`, `windowStart`, `windowEnd`, `maxTransfers`, `fetchedTransfers`, `complete`, `provider`, `fetchedAt`, `failures` |
 | `UserStatement` | 답은 `"no" \| "yes" \| "unknown" \| null` (null = 미확인) |
+| `SubmissionDetails` | `exchange`(ExchangeId), `restrictionType`(internal / sanction / phishing / unknown), `baseDate`(YYYY-MM-DD 또는 ""), `requestText` |
+| `ExchangeId` | `unspecified`, 국내 `upbit` `bithumb` `coinone` `korbit` `gopax` `kr-other`, 해외 `kraken` `coinbase` `binance` `intl-other` |
+| `CaseReport` | `generatedAt`, `analysisVersion`, `summary`, `request`, `additionalDocuments`, `route`(SubmissionRoute) |
+| `SubmissionRoute` | `submitTo`, `deadline`(`text`, `date`, `status`: set / soon / passed / unknown), `reviewPeriod`, `notes` |
+
+`ExchangeId`(어디에 소명하나)와 `ExchangeSource`(입금 목록을 어디서 불러오나)는 다른 목록입니다.
 
 금액 계산은 `rawValue`(정수 문자열)로 합니다. `displayValue`는 화면 표시용입니다.

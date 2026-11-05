@@ -1,4 +1,5 @@
 import { categoryLabels } from "@/features/case/utils";
+import { GROUPS, PROFILE_ORDER, PROFILES, RESTRICTION_LABELS } from "@/profiles";
 import type {
   Answer,
   CaseAnalysis,
@@ -25,14 +26,13 @@ const answerOptions = [
   { id: "unknown", label: "모르겠어요" },
 ] as const;
 
-const exchanges = [
-  { id: "unspecified", label: "선택하지 않음" },
-  { id: "upbit", label: "업비트" },
-  { id: "binance", label: "바이낸스" },
-  { id: "coinbase", label: "Coinbase" },
-  { id: "kraken", label: "Kraken" },
-  { id: "other", label: "기타" },
-] as const;
+// 기준일 칸 이름은 제한 유형에 따라 다릅니다. null이면 쓰지 않는 유형입니다.
+const baseDateLabels: Record<SubmissionDetails["restrictionType"], string | null> = {
+  internal: "자료 제출 기한 (거래소 통지에 적힌 날짜)",
+  phishing: "채권소멸절차 개시 공고일",
+  sanction: null,
+  unknown: null,
+};
 
 interface QuestionProps {
   number: string;
@@ -191,6 +191,7 @@ export function StatementScreen({
             )}
           </div>
 
+          {/* TODO(리포트·통합): 제한 유형·기준일 입력 화면 다듬기 (지금은 기초 배치) */}
           <div className="submission-details">
             <label className="select-field">
               <span>제출 대상 <small>선택</small></span>
@@ -203,13 +204,50 @@ export function StatementScreen({
                   })
                 }
               >
-                {exchanges.map((exchange) => (
-                  <option key={exchange.id} value={exchange.id}>
-                    {exchange.label}
+                <option value="unspecified">선택하지 않음</option>
+                {(["kr", "intl"] as const).map((group) => (
+                  <optgroup key={group} label={GROUPS[group].name}>
+                    {PROFILE_ORDER[group].map((id) => (
+                      <option key={id} value={id}>
+                        {PROFILES[id].name}
+                        {PROFILES[id].status === "research" ? " (리서치 중)" : ""}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </label>
+
+            <label className="select-field">
+              <span>받은 제한 <small>모르면 &quot;아직 모름&quot;</small></span>
+              <select
+                value={submission.restrictionType}
+                onChange={(event) =>
+                  onSubmissionChange({
+                    ...submission,
+                    restrictionType: event.target.value as SubmissionDetails["restrictionType"],
+                    baseDate: "",
+                  })
+                }
+              >
+                {(Object.keys(RESTRICTION_LABELS) as Array<keyof typeof RESTRICTION_LABELS>).map((type) => (
+                  <option key={type} value={type}>
+                    {RESTRICTION_LABELS[type]}
                   </option>
                 ))}
               </select>
             </label>
+
+            {baseDateLabels[submission.restrictionType] ? (
+              <label className="text-field compact-field">
+                <span>{baseDateLabels[submission.restrictionType]} <small>모르면 비워 두기</small></span>
+                <input
+                  type="date"
+                  value={submission.baseDate}
+                  onChange={(event) => onSubmissionChange({ ...submission, baseDate: event.target.value })}
+                />
+              </label>
+            ) : null}
 
             <label className="text-field compact-field submission-request-field">
               <span>거래소 요청 내용 <small>선택</small></span>

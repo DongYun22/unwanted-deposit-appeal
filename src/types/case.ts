@@ -145,11 +145,103 @@ export interface UserStatement {
   attachments: StatementAttachment[]; // 사용자가 고를 수 있는 건 첨부뿐
 }
 
-export type ExchangeId = "unspecified" | ExchangeSource | "coinbase" | "kraken" | "other";
+// ── 제출 정보 ──────────────────────────────────────────────
+// 여기서 말하는 거래소는 "어디에 소명하나"(src/profiles/)입니다.
+// 위의 ExchangeSource는 "입금 목록을 어디서 불러오나"(src/server/exchanges/)라서 다른 목록입니다.
+export type ExchangeGroup = "kr" | "intl"; // 국내 원화 거래소 / 해외 거래소
+
+export type ProfiledExchangeId =
+  | "upbit"
+  | "bithumb"
+  | "coinone"
+  | "korbit"
+  | "gopax"
+  | "kr-other"
+  | "kraken"
+  | "coinbase"
+  | "binance"
+  | "intl-other";
+
+export type ExchangeId = "unspecified" | ProfiledExchangeId;
+
+// 어떤 제한을 받았는지에 따라 제출처와 기한이 먼저 갈립니다 (리서치 5-2)
+//   internal = 거래소 내부 심사, sanction = 제재에 따른 자산 동결,
+//   phishing = 보이스피싱 법정 지급정지, unknown = 아직 모름
+export type RestrictionType = "internal" | "sanction" | "phishing" | "unknown";
 
 export interface SubmissionDetails {
   exchange: ExchangeId;
+  restrictionType: RestrictionType;
+  // internal → 거래소 통지에 적힌 자료 제출 기한, phishing → 채권소멸절차 개시 공고일
+  // 그 밖의 유형에서는 쓰지 않습니다. YYYY-MM-DD, 모르면 ""
+  baseDate: string;
   requestText: string; // 거래소에서 받은 요청 문구 (선택)
+}
+
+// ── 거래소 프로필 (소명 절차) ─────────────────────────────────
+// verified = 공개 자료로 칸을 채움, research = 아직 리서치 중(공통 칸만 적용),
+// fallback = 프로필이 없는 거래소(그 외 국내 / 그 외 해외)
+export type ProfileStatus = "verified" | "research" | "fallback";
+
+// 칸 하나의 상태: verified = 공개 자료로 확인, check = 확인 필요, caution = 주의 안내
+export type FieldStatus = "verified" | "check" | "caution";
+
+export type DocumentLanguage = "ko" | "en";
+
+export type AppealDocumentId =
+  | "txHash"
+  | "depositReason"
+  | "bankRecords"
+  | "otherExchangeRecords"
+  | "exchangeRecords"
+  | "counterpartyRecords";
+
+export interface ProfileSource {
+  label: string;
+  url?: string;
+}
+
+export interface ProfileField {
+  label: string;
+  value: string;
+  status: FieldStatus;
+  source?: ProfileSource; // status가 verified면 필수
+}
+
+// 국내 · 해외 공통 칸. 거래소별 칸이 비어 있어도 이 칸은 적용됩니다.
+export interface ExchangeGroupProfile {
+  id: ExchangeGroup;
+  name: string;
+  language: DocumentLanguage;
+  requestedDocuments: AppealDocumentId[];
+  fields: ProfileField[];
+}
+
+export interface ExchangeProfile {
+  id: ProfiledExchangeId;
+  name: string;
+  group: ExchangeGroup;
+  status: ProfileStatus;
+  language: DocumentLanguage; // 소명서 기본 언어
+  channel: string; // 제출 창구
+  reviewPeriod: string | null; // 거래소가 안내한 심사 기간 (제출 기한이 아님)
+  requestedDocuments: AppealDocumentId[];
+  fields: ProfileField[]; // 거래소별 칸
+  checkedAt: string | null; // 마지막으로 공개 자료를 확인한 날
+}
+
+// 제한 유형 + 거래소 프로필 + 기준일로 계산한 제출 경로 (src/profiles/route.ts)
+export type DeadlineStatus = "set" | "soon" | "passed" | "unknown";
+
+export interface SubmissionRoute {
+  submitTo: string;
+  deadline: {
+    text: string;
+    date: string | null; // YYYY-MM-DD, 정할 수 없으면 null
+    status: DeadlineStatus;
+  };
+  reviewPeriod: string | null;
+  notes: string[];
 }
 
 // ── 보고서 ────────────────────────────────────────────────
@@ -159,4 +251,5 @@ export interface CaseReport {
   summary: string;
   request: string;
   additionalDocuments: string[];
+  route: SubmissionRoute; // 어디에, 언제까지 낼지
 }

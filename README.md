@@ -121,6 +121,10 @@ src/
 │   ├── analysis/               # A~E 분석 (순수 함수 + 테스트)
 │   ├── report/                 # 보고서 문안
 │   └── constants.ts            # 조사 기간·상한 같은 기준값
+├── profiles/                   # 거래소 프로필: 어디에, 무엇을, 언제까지 내나 (README 있음)
+│   ├── groups.ts               # 국내 · 해외 공통 칸
+│   ├── exchanges/              # 거래소별 칸 (국내 5곳, 해외 3곳)
+│   └── route.ts                # 제한 유형 + 프로필 + 기준일 → 제출처와 기한
 ├── fixtures/demo-case.ts       # 데모 고정 데이터
 └── types/case.ts               # 화면과 서버가 주고받는 데이터 모양
 ```
@@ -141,7 +145,9 @@ providers / exchanges  →  Transfer[]  →  analysis (A~E, S)  →  CaseAnalysi
 | 분석 | A~E 기준 다듬기, 문장 규칙 지키기, 경계 사례 테스트 | `src/server/analysis/` |
 | 거래소 연결 | 업비트 입금 목록(바이낸스는 여유 있으면), 키 안내 문구, 1단계 화면 | `src/server/exchanges/`, `TransactionScreen.tsx` |
 | 리포트·통합 | 보고서 문안, 화면 다듬기, PR 검토, 합치기 | `src/server/report/`, `src/features/case/` |
-| 리서치팀 | 데모용 공개 사례 1건 (보낸 주소, 기간) | `src/fixtures/demo-case.ts` |
+| 거래소 프로필 · 국내 | 업비트 출처 링크, 빗썸·코인원·코빗·고팍스 공개 자료 확인 | `src/profiles/exchanges/` |
+| 거래소 프로필 · 해외 | Kraken 출처 링크, Coinbase·Binance 공개 자료 확인 | `src/profiles/exchanges/` |
+| 리서치팀 | 데모용 공개 사례 1건 (보낸 주소, 기간), 공통 칸의 법 조항 요약 확인 | `src/fixtures/demo-case.ts`, `src/profiles/groups.ts` |
 
 각 파일 맨 위에 `TODO(역할)`로 할 일을 적어뒀습니다. `grep -rn "TODO(" src`로 모아 볼 수 있습니다.
 

@@ -1,4 +1,5 @@
 import { SourceLinks } from "@/features/case/SourceLinks";
+import { exchangeLabel } from "@/profiles";
 import {
   answerLabel,
   categoryLabels,
@@ -22,15 +23,6 @@ interface ReportScreenProps {
   onBack: () => void;
   onRestart: () => void;
 }
-
-const exchangeLabels = {
-  unspecified: "미지정",
-  upbit: "업비트",
-  binance: "바이낸스",
-  coinbase: "Coinbase",
-  kraken: "Kraken",
-  other: "기타 거래소",
-} as const;
 
 function EvidenceSection({ analysis, category }: { analysis: CaseAnalysis; category: EvidenceCategory }) {
   const items = analysis.evidence.filter((item) => item.category === category);
@@ -79,7 +71,7 @@ export function ReportScreen({ submission, analysis, statement, report, onBack, 
 
           <dl className={hasExchange ? "report-metadata" : "report-metadata is-three-columns"}>
             {hasExchange ? (
-              <div><dt>제출 대상</dt><dd>{exchangeLabels[submission.exchange]}</dd></div>
+              <div><dt>제출 대상</dt><dd>{exchangeLabel(submission.exchange)}</dd></div>
             ) : null}
             <div><dt>대상 지갑</dt><dd>{shortAddress(walletAddress, 10, 8)}</dd></div>
             <div><dt>문제 거래</dt><dd>{shortAddress(transfer.txHash, 10, 8)}</dd></div>
@@ -153,8 +145,19 @@ export function ReportScreen({ submission, analysis, statement, report, onBack, 
         </article>
 
         <aside className="submission-panel">
+          {/* TODO(리포트·통합): 제출 경로 표시 다듬기 (지금은 기초 배치) */}
+          <dl className={`submission-route deadline-${report.route.deadline.status}`}>
+            <div><dt>제출처</dt><dd>{report.route.submitTo}</dd></div>
+            <div><dt>기한</dt><dd className="route-deadline">{report.route.deadline.text}</dd></div>
+            {report.route.reviewPeriod ? (
+              <div><dt>심사 기간</dt><dd>{report.route.reviewPeriod}</dd></div>
+            ) : null}
+            {report.route.notes.map((note) => (
+              <div key={note}><dt>참고</dt><dd>{note}</dd></div>
+            ))}
+          </dl>
           <div>
-            <h2>{hasExchange ? `${exchangeLabels[submission.exchange]} 추가 자료` : "추가 확인 자료"}</h2>
+            <h2>{hasExchange ? `${exchangeLabel(submission.exchange)} 추가 자료` : "추가 확인 자료"}</h2>
             <p>{submission.requestText.trim() ? "받은 요청과 대조하세요." : "필요한 경우에만 추가하세요."}</p>
           </div>
           <ul>
