@@ -44,15 +44,21 @@ describe("거래소 내부 심사", () => {
     assert.equal(deadlineStatus("2026-11-12", TODAY), "set");
   });
 
-  it("Kraken은 심사 기간을 기한과 따로 보여준다", () => {
-    const route = getSubmissionRoute({ exchange: "kraken", restrictionType: "internal", baseDate: "" }, TODAY);
-    assert.equal(route.deadline.status, "unknown");
-    assert.ok(route.reviewPeriod);
+  // 아래 두 테스트는 특정 거래소 이름을 쓰지 않습니다.
+  // 국내 · 해외 담당이 프로필을 채워도 이 공용 파일을 고칠 일이 없게 하려는 것입니다 (CONTRIBUTING.md).
+  it("심사 기간이 있는 거래소는 심사 기간을 기한과 따로 보여준다", () => {
+    for (const profile of Object.values(PROFILES).filter((item) => item.reviewPeriod)) {
+      const route = getSubmissionRoute({ exchange: profile.id, restrictionType: "internal", baseDate: "" }, TODAY);
+      assert.equal(route.deadline.status, "unknown", profile.name);
+      assert.equal(route.reviewPeriod, profile.reviewPeriod, profile.name);
+    }
   });
 
   it("리서치 중인 거래소는 공통 기준이라고 알린다", () => {
-    const route = getSubmissionRoute({ exchange: "bithumb", restrictionType: "internal", baseDate: "" }, TODAY);
-    assert.ok(route.notes.some((note) => note.includes("공통 기준")));
+    for (const profile of Object.values(PROFILES).filter((item) => item.status === "research")) {
+      const route = getSubmissionRoute({ exchange: profile.id, restrictionType: "internal", baseDate: "" }, TODAY);
+      assert.ok(route.notes.some((note) => note.includes("공통 기준")), profile.name);
+    }
   });
 
   it("모르는 거래소 값은 미지정으로 본다", () => {
