@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { SourceLinks } from "@/features/case/SourceLinks";
-import { exchangeLabel } from "@/profiles";
+import { DOCUMENT_STATUS_LABELS, RESTRICTION_LABELS, SCOPE_LABELS, exchangeLabel } from "@/profiles";
 import {
   answerLabel,
   categoryLabels,
@@ -24,6 +25,45 @@ interface ReportScreenProps {
   onRestart: () => void;
 }
 
+// "제출 문안 복사"용 글자 버전. 화면의 소명서와 같은 순서로 씁니다.
+function reportText(report: CaseReport, analysis: CaseAnalysis, statement: UserStatement, submission: SubmissionDetails) {
+  const lines = [
+    report.title,
+    `${RESTRICTION_LABELS[submission.restrictionType]} · ${SCOPE_LABELS[submission.scope]}`,
+    `제출처: ${report.route.submitTo}`,
+    `기한: ${report.route.deadline.text}`,
+    `대상 지갑: ${analysis.walletAddress}`,
+    `문제 거래: ${analysis.transfer.txHash}`,
+    "",
+    "요약",
+    report.summary,
+  ];
+  for (const category of ["verified", "derived", "unverifiable"] as const) {
+    const items = analysis.evidence.filter((item) => item.category === category);
+    if (items.length === 0) continue;
+    lines.push("", categoryLabels[category]);
+    for (const item of items) {
+      const link = item.sources.find((source) => source.url)?.url;
+      lines.push(`- ${item.title}. ${item.description}${link ? ` (${link})` : ""}`);
+    }
+  }
+  lines.push(
+    "",
+    "사용자 설명 (온체인 기록으로 확인한 사실이 아님)",
+    `- 입금을 요청했나: ${answerLabel(statement.requestedTransfer)}`,
+    `- 보낸 사람을 아나: ${answerLabel(statement.knowsSender)}`,
+    `- 거래 목적이 있었나: ${answerLabel(statement.hadPurpose)}`,
+    `- 처음 알게 된 날: ${statement.discoveredAt || "미확인"}`,
+  );
+  if (statement.note.trim()) lines.push(`- ${statement.note.trim()}`);
+  lines.push("", "제출 자료");
+  for (const document of report.documents) {
+    lines.push(`- ${document.label}: ${DOCUMENT_STATUS_LABELS[document.status]}${document.note ? ` · ${document.note}` : ""}`);
+  }
+  lines.push("", "요청 사항", report.request);
+  return lines.join("\n");
+}
+
 function EvidenceSection({ analysis, category }: { analysis: CaseAnalysis; category: EvidenceCategory }) {
   const items = analysis.evidence.filter((item) => item.category === category);
   if (items.length === 0) return null;
@@ -45,9 +85,19 @@ function EvidenceSection({ analysis, category }: { analysis: CaseAnalysis; categ
 }
 
 export function ReportScreen({ submission, analysis, statement, report, onBack, onRestart }: ReportScreenProps) {
+  const [copyState, setCopyState] = useState<string>();
   if (!analysis || !report) return null;
   const { transfer, scope, walletAddress } = analysis;
   const hasExchange = submission.exchange !== "unspecified";
+
+  const copyText = async () => {
+    try {
+      await navigator.clipboard.writeText(reportText(report, analysis, statement, submission));
+      setCopyState("소명서 전체를 복사했습니다.");
+    } catch {
+      setCopyState("이 브라우저에서는 복사가 막혀 있습니다. PDF로 저장해 주세요.");
+    }
+  };
 
   return (
     <section className="screen-section report-screen" aria-labelledby="report-title">
@@ -63,8 +113,8 @@ export function ReportScreen({ submission, analysis, statement, report, onBack, 
         <article className="report-paper">
           <header>
             <div>
-              <p>거래 경위 자료</p>
-              <h2>원치 않은 입금 관련 검토 요청</h2>
+              <p>{RESTRICTION_LABELS[submission.restrictionType]} · {SCOPE_LABELS[submission.scope]}</p>
+              <h2>{report.title}</h2>
             </div>
             <span>{analysis.caseId}</span>
           </header>
@@ -133,8 +183,21 @@ export function ReportScreen({ submission, analysis, statement, report, onBack, 
             </dl>
           </section>
 
+          <section className="report-copy">
+            <h3>제출 자료</h3>
+            <ul className="report-documents">
+              {report.documents.map((document) => (
+                <li key={document.id}>
+                  <span>{document.label}</span>
+                  <span className={`document-status is-${document.status}`}>{DOCUMENT_STATUS_LABELS[document.status]}</span>
+                  {document.note ? <small>{document.note}</small> : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+
           <section className="report-copy report-request">
-            <h3>검토 요청</h3>
+            <h3>요청 사항</h3>
             <p>{report.request}</p>
           </section>
 
@@ -145,7 +208,6 @@ export function ReportScreen({ submission, analysis, statement, report, onBack, 
         </article>
 
         <aside className="submission-panel">
-          {/* TODO(리포트·통합): 제출 경로 표시 다듬기 (지금은 기초 배치) */}
           <dl className={`submission-route deadline-${report.route.deadline.status}`}>
             <div><dt>제출처</dt><dd>{report.route.submitTo}</dd></div>
             <div><dt>기한</dt><dd className="route-deadline">{report.route.deadline.text}</dd></div>
@@ -170,9 +232,10 @@ export function ReportScreen({ submission, analysis, statement, report, onBack, 
           <button className="primary-button full-button" type="button" onClick={() => window.print()}>
             PDF로 저장
           </button>
-          <button className="secondary-button full-button" type="button" onClick={() => navigator.clipboard?.writeText(report.request)}>
+          <button className="secondary-button full-button" type="button" onClick={copyText}>
             제출 문안 복사
           </button>
+          {copyState ? <p className="copy-state" role="status">{copyState}</p> : null}
         </aside>
       </div>
 

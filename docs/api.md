@@ -69,7 +69,9 @@
 | 요청 | `{ "walletAddress", "txHash", "eventIndex", "statement": UserStatement, "submission": SubmissionDetails }` |
 | 응답 | `{ "analysis": CaseAnalysis, "report": CaseReport }` |
 
-`submission`에 `restrictionType`이나 `baseDate`가 없으면 `"unknown"`과 `""`로 채웁니다. 모르는 `exchange` 값은 `"unspecified"`로 봅니다.
+`submission`에 빠진 칸은 서버가 기본값으로 채웁니다 (`restrictionType` → `"unknown"`, `requestType` → `"account"`, 날짜 → `""` 등. `src/server/report/appeal.ts`의 `normalizeSubmission`). 모르는 `exchange` 값은 `"unspecified"`로 봅니다.
+
+`report.title`과 `report.request`는 받은 제한과 요청 유형에 따라 바뀝니다. 받은 제한이 `"unknown"`이면 소명서 대신 제한 내용을 묻는 문의서가 됩니다.
 
 `report.route`는 제한 유형, 거래소 프로필(`src/profiles/`), 기준일로 계산한 제출처와 기한입니다. 기한의 "오늘"은 한국 날짜 기준입니다.
 
@@ -81,9 +83,10 @@
 | `EvidenceItem` | `category`(verified / derived / unverifiable), `analysis`(A~E, S), `title`, `description`, `sources` |
 | `AnalysisScope` | `windowLabel`, `windowStart`, `windowEnd`, `maxTransfers`, `fetchedTransfers`, `complete`, `provider`, `fetchedAt`, `failures` |
 | `UserStatement` | 답은 `"no" \| "yes" \| "unknown" \| null` (null = 미확인) |
-| `SubmissionDetails` | `exchange`(ExchangeId), `restrictionType`(internal / sanction / phishing / unknown), `baseDate`(YYYY-MM-DD 또는 ""), `requestText` |
+| `SubmissionDetails` | `exchange`(ExchangeId), `restrictionType`(internal / sanction / phishing / unknown), `scope`(deposit / withdraw / account / unknown), `noticeDate`, `baseDate`(YYYY-MM-DD 또는 ""), `requestText`, `requestType`(account / fund), `objectionGround`(notUsed / legitimate), `availableDocuments`(AppealDocumentId[]) |
 | `ExchangeId` | `unspecified`, 국내 `upbit` `bithumb` `coinone` `korbit` `gopax` `kr-other`, 해외 `kraken` `coinbase` `binance` `intl-other` |
-| `CaseReport` | `generatedAt`, `analysisVersion`, `summary`, `request`, `additionalDocuments`, `route`(SubmissionRoute) |
+| `CaseReport` | `generatedAt`, `analysisVersion`, `title`, `summary`, `request`, `documents`(ReportDocument[]), `additionalDocuments`, `route`(SubmissionRoute) |
+| `ReportDocument` | `id`, `label`, `status`(onchain / statement / ready / needed), `note` |
 | `SubmissionRoute` | `submitTo`, `deadline`(`text`, `date`, `status`: set / soon / passed / unknown), `reviewPeriod`, `notes` |
 
 `ExchangeId`(어디에 소명하나)와 `ExchangeSource`(입금 목록을 어디서 불러오나)는 다른 목록입니다.
