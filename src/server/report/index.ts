@@ -7,26 +7,21 @@ import "server-only";
 //   - 온체인 사실은 화면에서 받은 값을 쓰지 않고, 서버가 다시 조사한 결과(analysis)로만 씁니다.
 //   - 사용자 설명과 온체인 기록을 섞어 한 문장으로 쓰지 않습니다.
 //   - "결백", "무관", "깨끗한" 같은 판단하는 말을 쓰지 않습니다. (docs/writing-rules.md)
+//   - 제한 유형 · 요청 유형에 따라 바뀌는 부분은 appeal.ts에 있습니다.
 
-import { DOCUMENT_LABELS, getProfile, getSubmissionRoute, todayInSeoul } from "@/profiles";
+import { getProfile, getSubmissionRoute, todayInSeoul } from "@/profiles";
+import { appealDocuments, appealRequest, appealTitle, normalizeSubmission } from "@/server/report/appeal";
 import { amount } from "@/server/format";
 import type { CaseAnalysis, CaseReport, SubmissionDetails, UserStatement } from "@/types/case";
 
 export function buildReport(input: {
   analysis: CaseAnalysis;
   statement: UserStatement;
-  submission: SubmissionDetails;
+  submission: Partial<SubmissionDetails>;
 }): CaseReport {
   const { analysis, statement } = input;
   const { facts, transfer, scope } = analysis;
-
-  // 예전 화면이 보낸 값에는 새 칸이 없을 수 있어서 기본값을 채웁니다.
-  const submission: SubmissionDetails = {
-    exchange: getProfile(input.submission.exchange) ? input.submission.exchange : "unspecified",
-    restrictionType: input.submission.restrictionType ?? "unknown",
-    baseDate: input.submission.baseDate ?? "",
-    requestText: input.submission.requestText ?? "",
-  };
+  const submission = normalizeSubmission(input.submission);
   const profile = getProfile(submission.exchange);
 
   const summary = [
@@ -43,9 +38,6 @@ export function buildReport(input: {
   const additionalDocuments = [
     ...(submission.requestText.trim() ? ["거래소에서 받은 소명 요청 원문"] : []),
     ...(submission.exchange !== "unspecified" ? ["제출 계정 정보가 확인되는 화면"] : []),
-    ...(profile?.status === "verified"
-      ? [`${profile.name} 공개 안내의 요청 자료: ${profile.requestedDocuments.map((id) => DOCUMENT_LABELS[id]).join(", ")}`]
-      : []),
     statement.attachments.length > 0
       ? `사용자가 첨부한 관련 자료 ${statement.attachments.length}개`
       : "관련 자료가 있다면 추가 첨부",
@@ -55,9 +47,13 @@ export function buildReport(input: {
   return {
     generatedAt: new Date().toISOString(),
     analysisVersion: analysis.version,
+    title: appealTitle(submission),
     summary,
-    request:
-      "위 온체인 기록과 사용자 설명을 구분해 정리했습니다. 각 항목의 원본 링크로 기록을 직접 확인하신 뒤 해당 입금의 경위를 검토해 주시기 바랍니다.",
+    request: appealRequest(submission, {
+      amountText: amount(transfer),
+      senderMatchedSanctions: analysis.sanctions.senderMatched,
+    }),
+    documents: appealDocuments({ submission, statement, profile }),
     additionalDocuments,
     route: getSubmissionRoute(submission, todayInSeoul()),
   };

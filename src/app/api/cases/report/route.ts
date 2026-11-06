@@ -16,7 +16,7 @@ interface ReportBody {
   txHash?: unknown;
   eventIndex?: unknown;
   statement?: UserStatement;
-  submission?: SubmissionDetails;
+  submission?: Partial<SubmissionDetails>; // 빠진 칸은 서버가 기본값으로 채움 (server/report/appeal.ts)
 }
 
 export async function POST(request: Request) {

@@ -4,7 +4,7 @@
 export type ChainId = 1; // MVP: Ethereum Mainnet만
 export type AssetType = "native" | "erc20";
 export type DataProvider = "demo" | "alchemy" | "upbit" | "binance";
-export type CaseStep = "transaction" | "analysis" | "statement" | "report";
+export type CaseStep = "situation" | "transaction" | "analysis" | "statement" | "report";
 
 // ── 온체인 전송 1건 ─────────────────────────────────────────
 // 같은 거래 안에 토큰 전송이 여러 개일 수 있어서 id는 txHash:eventIndex
@@ -169,13 +169,29 @@ export type ExchangeId = "unspecified" | ProfiledExchangeId;
 //   phishing = 보이스피싱 법정 지급정지, unknown = 아직 모름
 export type RestrictionType = "internal" | "sanction" | "phishing" | "unknown";
 
+// 어디까지 막혔는지
+export type RestrictionScope = "deposit" | "withdraw" | "account" | "unknown";
+
+// 무엇을 다시 봐 달라고 할지 (내부 심사 · 제재 동결)
+//   account = 문제 입금 보류는 두고 기존 잔액과 계정 기능을 재검토, fund = 문제 입금 보류 해제
+export type AppealRequestType = "account" | "fund";
+
+// 보이스피싱 지급정지 이의 사유 (통신사기피해환급법, 리서치 5-2)
+//   notUsed = 계정이 사기에 이용되지 않음, legitimate = 정당한 권원으로 받음
+export type ObjectionGround = "notUsed" | "legitimate";
+
 export interface SubmissionDetails {
   exchange: ExchangeId;
   restrictionType: RestrictionType;
+  scope: RestrictionScope;
+  noticeDate: string; // 제한 통지를 받은 날. YYYY-MM-DD, 모르면 ""
   // internal → 거래소 통지에 적힌 자료 제출 기한, phishing → 채권소멸절차 개시 공고일
   // 그 밖의 유형에서는 쓰지 않습니다. YYYY-MM-DD, 모르면 ""
   baseDate: string;
   requestText: string; // 거래소에서 받은 요청 문구 (선택)
+  requestType: AppealRequestType;
+  objectionGround: ObjectionGround;
+  availableDocuments: AppealDocumentId[]; // 사용자가 준비했다고 표시한 자료 (파일은 올리지 않음)
 }
 
 // ── 거래소 프로필 (소명 절차) ─────────────────────────────────
@@ -245,11 +261,25 @@ export interface SubmissionRoute {
 }
 
 // ── 보고서 ────────────────────────────────────────────────
+// 제출 자료 목록의 상태
+//   onchain = 이 자료의 온체인 기록과 원본 링크, statement = 사용자 설명,
+//   ready = 사용자가 준비했다고 표시, needed = 아직 준비하지 않음
+export type DocumentStatus = "onchain" | "statement" | "ready" | "needed";
+
+export interface ReportDocument {
+  id: AppealDocumentId;
+  label: string;
+  status: DocumentStatus;
+  note: string; // 예: "업비트 요청 항목" (없으면 "")
+}
+
 export interface CaseReport {
   generatedAt: string;
   analysisVersion: string;
+  title: string; // 제한 유형과 요청 유형에 따라 달라짐
   summary: string;
   request: string;
+  documents: ReportDocument[];
   additionalDocuments: string[];
   route: SubmissionRoute; // 어디에, 언제까지 낼지
 }

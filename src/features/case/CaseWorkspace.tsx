@@ -12,6 +12,7 @@ import {
 import { readWalletAddress } from "@/lib/wallet";
 import { AnalysisScreen } from "@/features/case/screens/AnalysisScreen";
 import { ReportScreen } from "@/features/case/screens/ReportScreen";
+import { SituationScreen } from "@/features/case/screens/SituationScreen";
 import { StatementScreen } from "@/features/case/screens/StatementScreen";
 import { TransactionScreen, type IntakeSource } from "@/features/case/screens/TransactionScreen";
 import type {
@@ -26,17 +27,23 @@ import type {
 } from "@/types/case";
 
 const steps: Array<{ id: CaseStep; label: string }> = [
+  { id: "situation", label: "상황" },
   { id: "transaction", label: "입금 찾기" },
   { id: "analysis", label: "온체인 조사" },
   { id: "statement", label: "내 설명" },
-  { id: "report", label: "자료 생성" },
+  { id: "report", label: "소명서" },
 ];
 
 const initialSubmission: SubmissionDetails = {
   exchange: "unspecified",
   restrictionType: "unknown",
+  scope: "unknown",
+  noticeDate: "",
   baseDate: "",
   requestText: "",
+  requestType: "account",
+  objectionGround: "notUsed",
+  availableDocuments: [],
 };
 
 // 모든 답은 "선택 안 함"으로 시작합니다. 도구가 답을 대신 고르지 않기 위해서입니다.
@@ -55,7 +62,7 @@ export const EXAMPLE_WALLET = "0x1111111111111111111111111111111111111111";
 const isAddress = (value: string) => /^0x[a-fA-F0-9]{40}$/.test(value);
 
 export function CaseWorkspace() {
-  const [step, setStep] = useState<CaseStep>("transaction");
+  const [step, setStep] = useState<CaseStep>("situation");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [source, setSource] = useState<IntakeSource>("wallet");
   const [submission, setSubmission] = useState<SubmissionDetails>(initialSubmission);
@@ -164,7 +171,8 @@ export function CaseWorkspace() {
       setWalletAddress(transfer.to);
       setTransfers([transfer]);
       setSelectedTransferId(transfer.id);
-      setSubmission((current) => ({ ...current, exchange: deposit.exchange }));
+      // 1단계에서 거래소를 고르지 않았다면 입금 목록을 불러온 거래소로 채웁니다.
+      setSubmission((current) => (current.exchange === "unspecified" ? { ...current, exchange: deposit.exchange } : current));
       await runAnalysis(transfer.to, transfer);
     } catch (caught) {
       setError(errorMessage(caught, "거래를 찾지 못했습니다."));
@@ -189,7 +197,7 @@ export function CaseWorkspace() {
   };
 
   const restart = () => {
-    setStep("transaction");
+    setStep("situation");
     setSubmission(initialSubmission);
     setWalletAddress("");
     setTransfers([]);
@@ -252,6 +260,13 @@ export function CaseWorkspace() {
       </aside>
 
       <main className="workspace">
+        {step === "situation" ? (
+          <SituationScreen
+            submission={submission}
+            onChange={setSubmission}
+            onNext={() => setStep("transaction")}
+          />
+        ) : null}
         {step === "transaction" ? (
           <TransactionScreen
             source={source}
@@ -298,6 +313,7 @@ export function CaseWorkspace() {
             submission={submission}
             onStatementChange={setStatement}
             onSubmissionChange={setSubmission}
+            onEditSituation={() => setStep("situation")}
             onBack={() => setStep("analysis")}
             onNext={buildReport}
             loading={loading}
