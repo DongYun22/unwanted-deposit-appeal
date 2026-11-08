@@ -4,8 +4,8 @@ import type { ExchangeProfile } from "@/types/case";
 // 담당: 거래소 프로필 · 해외
 // 출처는 Coinbase Help Center 공개 문서입니다. 문구는 원문을 거의 그대로 옮겼습니다.
 // 제출 기한, 심사 기간, 제재 주소가 아닌 곳에서 온 요청하지 않은 입금 처리는 아직 확인하지 못해 "check"로 남겼습니다.
-// TODO(거래소 프로필 · 해외): 자금 출처 서류 안내
-//   (https://help.coinbase.com/en/coinbase/managing-my-account/other/proof-of-source-of-funds-and-wealth-documents)를 확인해 서류 조건 채우기
+// 예전 자금 출처 서류 안내(.../managing-my-account/other/proof-of-source-of-funds-and-wealth-documents)는
+// 2026-11-08 기준 "Page not found"입니다. 서류 조건은 계정 검토 안내에 있는 내용만 씁니다.
 
 const SOURCES = {
   accountReview: {
