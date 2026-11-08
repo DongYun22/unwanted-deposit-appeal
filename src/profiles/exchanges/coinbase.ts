@@ -3,7 +3,7 @@ import type { ExchangeProfile } from "@/types/case";
 // Coinbase 소명 절차
 // 담당: 거래소 프로필 · 해외
 // 출처는 Coinbase Help Center 공개 문서입니다. 문구는 원문을 거의 그대로 옮겼습니다.
-// 제출 기한, 심사 기간, 제재 주소가 아닌 곳에서 온 요청하지 않은 입금 처리는 아직 확인하지 못해 "check"로 남겼습니다.
+// 제출 기한, 제재 주소가 아닌 곳에서 온 요청하지 않은 입금 처리는 아직 확인하지 못해 "check"로 남겼습니다.
 // 예전 자금 출처 서류 안내(.../managing-my-account/other/proof-of-source-of-funds-and-wealth-documents)는
 // 2026-11-08 기준 "Page not found"입니다. 서류 조건은 계정 검토 안내에 있는 내용만 씁니다.
 
@@ -29,7 +29,7 @@ export const coinbase: ExchangeProfile = {
   status: "verified",
   language: "en",
   channel: "Coinbase 계정의 알림 또는 계정 작업(account task) 화면",
-  reviewPeriod: null,
+  reviewPeriod: "정해진 기간 없음 · 서류와 계정 활동에 따라 다름 (제출 기한이 아니라 심사 기간)",
   requestedDocuments: ["depositReason", "bankRecords", "otherExchangeRecords"],
   fields: [
     {
@@ -109,7 +109,13 @@ export const coinbase: ExchangeProfile = {
       source: SOURCES.scams,
     },
     { label: "제출 기한", value: "공개 자료에서 찾지 못했습니다. 알림이나 계정 작업에 적힌 기한을 확인합니다.", status: "check" },
-    { label: "심사 기간", value: "공개 자료에서 찾지 못했습니다.", status: "check" },
+    {
+      label: "심사 기간",
+      value:
+        "정해진 기간은 안내되어 있지 않습니다. 요청한 정보, 서류의 품질과 완전성, 계정 활동의 복잡도, 추가 정보가 필요한지, 수동 검토가 필요한지에 따라 다릅니다. 빠짐없고 선명하고 일관된 정보를 내면 지연을 줄일 수 있습니다.",
+      status: "verified",
+      source: SOURCES.accountReview,
+    },
     {
       label: "제재 주소에서 온 요청하지 않은 입금",
       value:
