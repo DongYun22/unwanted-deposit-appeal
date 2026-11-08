@@ -3,7 +3,7 @@ import type { ExchangeProfile } from "@/types/case";
 // Coinbase 소명 절차
 // 담당: 거래소 프로필 · 해외
 // 출처는 Coinbase Help Center 공개 문서입니다. 문구는 원문을 거의 그대로 옮겼습니다.
-// 제출 기한, 제재 주소가 아닌 곳에서 온 요청하지 않은 입금 처리는 아직 확인하지 못해 "check"로 남겼습니다.
+// 제출 기한, 제재 주소가 아닌 곳에서 온 소액이 아닌 요청하지 않은 입금 처리는 공개 문서에 없어 "check"로 남겼습니다.
 // 예전 자금 출처 서류 안내(.../managing-my-account/other/proof-of-source-of-funds-and-wealth-documents)는
 // 2026-11-08 기준 "Page not found"입니다. 서류 조건은 계정 검토 안내에 있는 내용만 씁니다.
 
@@ -19,6 +19,10 @@ const SOURCES = {
   restriction: {
     label: "Coinbase Help · Resolve your account restriction",
     url: "https://help.coinbase.com/en/coinbase/privacy-and-security/other/account-restriction",
+  },
+  dusting: {
+    label: "Coinbase Help · Dusting attacks",
+    url: "https://help.coinbase.com/en/coinbase/privacy-and-security/avoid-scams/dusting-attacks",
   },
   scams: {
     label: "Coinbase Help · Technical support and impersonation scams",
@@ -163,8 +167,16 @@ export const coinbase: ExchangeProfile = {
       source: SOURCES.ofac,
     },
     {
+      label: "요청하지 않은 소액 입금",
+      value:
+        "먼지 공격(dusting attack)은 아주 적은 양의 가상자산을 에어드롭으로 여러 지갑에 보내는 것입니다. 받은 사람이 그 자금을 현금화하거나 옮기면, 공격자는 그 움직임으로 지갑 주인을 알아내 피싱 등에 씁니다. 토큰 이름에 URL을 넣어 시드 문구를 입력하게 하기도 합니다. 예상하지 못한 소액이 오면 그냥 두면 됩니다. Coinbase Wallet 앱에서는 자산 화면의 점 세 개 → Hide & report로 신고할 수 있습니다.",
+      status: "verified",
+      source: SOURCES.dusting,
+    },
+    {
       label: "그 밖의 요청하지 않은 입금",
-      value: "제재 주소가 아닌 곳에서 임의로 보낸 가상자산 입금을 어떻게 처리하는지는 공개 자료에서 찾지 못했습니다.",
+      value:
+        "제재 주소가 아닌 곳에서 소액이 아닌 가상자산을 임의로 보냈을 때 Coinbase가 어떻게 처리하는지는 공개 자료에서 찾지 못했습니다.",
       status: "check",
     },
     {
