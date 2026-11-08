@@ -85,8 +85,16 @@ export const coinbase: ExchangeProfile = {
     },
     {
       label: "요청 기준",
-      value: "요청 내용은 국가 · 지역, 계정을 맡은 Coinbase 법인, 쓰는 상품, 계정 활동에 따라 다릅니다.",
+      value:
+        "요청 내용은 국가 · 지역, 계정을 맡은 Coinbase 법인, 쓰는 상품, 계정 활동에 따라 다릅니다. 내 Coinbase 계정에 표시된 요청 내용이 그 검토에 가장 정확한 안내입니다.",
       status: "verified",
+      source: SOURCES.accountReview,
+    },
+    {
+      label: "주의",
+      value:
+        "정보를 낸다고 해서 거래나 계정 기능이 승인된다는 보장은 없습니다. 제출한 정보가 정확하고, 빠짐없고, 최신인지는 제출한 사람이 책임집니다.",
+      status: "caution",
       source: SOURCES.accountReview,
     },
     { label: "제출 기한", value: "공개 자료에서 찾지 못했습니다. 알림이나 계정 작업에 적힌 기한을 확인합니다.", status: "check" },
