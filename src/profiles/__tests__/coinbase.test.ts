@@ -12,9 +12,11 @@ describe("Coinbase 프로필", () => {
     }
   });
 
-  it("공개 자료에서 심사 기간을 찾지 못했으면 심사 기간을 비워 둔다", () => {
-    assert.equal(coinbase.fields.find((field) => field.label === "심사 기간")?.status, "check");
-    assert.equal(coinbase.reviewPeriod, null);
+  it("심사 기간은 정해진 날수가 없다고 적고, 제출 기한과 따로 둔다", () => {
+    assert.equal(coinbase.fields.find((field) => field.label === "심사 기간")?.status, "verified");
+    assert.ok(coinbase.reviewPeriod?.includes("정해진 기간 없음"));
+    assert.ok(coinbase.reviewPeriod?.includes("제출 기한이 아니라 심사 기간"));
+    assert.equal(coinbase.fields.find((field) => field.label === "제출 기한")?.status, "check");
   });
 
   it("제재 주소 동결 칸은 Coinbase OFAC 안내를 출처로 쓴다", () => {
