@@ -16,6 +16,10 @@ const SOURCES = {
     label: "Coinbase Help · OFAC sanctioned addresses",
     url: "https://help.coinbase.com/en/coinbase/other-topics/legal-policies/ofac",
   },
+  scams: {
+    label: "Coinbase Help · Technical support and impersonation scams",
+    url: "https://help.coinbase.com/en/coinbase/privacy-and-security/avoid-scams/tech-support-scams",
+  },
 } as const;
 
 export const coinbase: ExchangeProfile = {
@@ -96,6 +100,13 @@ export const coinbase: ExchangeProfile = {
         "정보를 낸다고 해서 거래나 계정 기능이 승인된다는 보장은 없습니다. 제출한 정보가 정확하고, 빠짐없고, 최신인지는 제출한 사람이 책임집니다.",
       status: "caution",
       source: SOURCES.accountReview,
+    },
+    {
+      label: "사칭 주의",
+      value:
+        "Coinbase 고객지원 담당자는 자금을 보호 · 이동하거나 접근하라고 하지 않고, 시드 문구를 주거나 묻지 않고, 비밀번호나 2단계 인증 코드를 묻지 않습니다. 담당자를 대신해 외부 주소로 가상자산을 보내라고 하지도 않습니다. 이런 요청을 받으면 연락을 끊고 security@coinbase.com에 바로 알립니다. Coinbase에는 Contact us 페이지에 적힌 전화번호나 이메일로만 연락합니다.",
+      status: "caution",
+      source: SOURCES.scams,
     },
     { label: "제출 기한", value: "공개 자료에서 찾지 못했습니다. 알림이나 계정 작업에 적힌 기한을 확인합니다.", status: "check" },
     { label: "심사 기간", value: "공개 자료에서 찾지 못했습니다.", status: "check" },
