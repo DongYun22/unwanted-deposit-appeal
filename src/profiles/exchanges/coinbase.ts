@@ -16,6 +16,10 @@ const SOURCES = {
     label: "Coinbase Help · OFAC sanctioned addresses",
     url: "https://help.coinbase.com/en/coinbase/other-topics/legal-policies/ofac",
   },
+  restriction: {
+    label: "Coinbase Help · Resolve your account restriction",
+    url: "https://help.coinbase.com/en/coinbase/privacy-and-security/other/account-restriction",
+  },
   scams: {
     label: "Coinbase Help · Technical support and impersonation scams",
     url: "https://help.coinbase.com/en/coinbase/privacy-and-security/avoid-scams/tech-support-scams",
@@ -29,7 +33,8 @@ export const coinbase: ExchangeProfile = {
   status: "verified",
   language: "en",
   channel: "Coinbase 계정의 알림 또는 계정 작업(account task) 화면",
-  reviewPeriod: "정해진 기간 없음 · 서류와 계정 활동에 따라 다름 (제출 기한이 아니라 심사 기간)",
+  reviewPeriod:
+    "정보 요청 검토는 정해진 기간 없음 · 서류와 계정 활동에 따라 다름. 계정 제한 해제 검토는 보통 최대 10영업일 (제출 기한이 아니라 심사 기간)",
   requestedDocuments: ["depositReason", "bankRecords", "otherExchangeRecords"],
   fields: [
     {
@@ -107,6 +112,33 @@ export const coinbase: ExchangeProfile = {
         "Coinbase 고객지원 담당자는 자금을 보호 · 이동하거나 접근하라고 하지 않고, 시드 문구를 주거나 묻지 않고, 비밀번호나 2단계 인증 코드를 묻지 않습니다. 담당자를 대신해 외부 주소로 가상자산을 보내라고 하지도 않습니다. 이런 요청을 받으면 연락을 끊고 security@coinbase.com에 바로 알립니다. Coinbase에는 Contact us 페이지에 적힌 전화번호나 이메일로만 연락합니다.",
       status: "caution",
       source: SOURCES.scams,
+    },
+    {
+      label: "계정 일시 정지 · 제한",
+      value:
+        "'Sorry, account temporarily disabled' 메시지는 보통 보안 문제 때문에 나옵니다. 의심되는 악성 활동, 계정 복구 중 문제, 본인 요청 등으로 계정이 일시 정지되거나 제한될 수 있습니다. 제한이 자동으로 풀리기를 기다리거나 계정 복구 절차를 따릅니다.",
+      status: "verified",
+      source: SOURCES.restriction,
+    },
+    {
+      label: "제한 해제 절차",
+      value:
+        "2단계 인증 수단에 접근할 수 있고 로그인할 수 있어야 합니다. 계정 보안 권장 사항을 확인해 고친 뒤, Coinbase.com에 로그인해 제한된 동작을 다시 해 봅니다. 범죄 피해는 바로 수사기관에 신고합니다.",
+      status: "verified",
+      source: SOURCES.restriction,
+    },
+    {
+      label: "제한 해제 검토 기간",
+      value: "보통 최대 10영업일이고, 일부는 더 걸릴 수 있습니다. 검토가 끝나면 이메일로 알립니다.",
+      status: "verified",
+      source: SOURCES.restriction,
+    },
+    {
+      label: "검토 중 고객지원",
+      value:
+        "정책 위반, 분쟁, 손실을 일으킨 활동으로 검토 중인 계정은 고객지원 대기열이나 이용할 수 있는 창구가 바뀔 수 있습니다.",
+      status: "caution",
+      source: SOURCES.restriction,
     },
     { label: "제출 기한", value: "공개 자료에서 찾지 못했습니다. 알림이나 계정 작업에 적힌 기한을 확인합니다.", status: "check" },
     {
